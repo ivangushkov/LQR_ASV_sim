@@ -48,7 +48,7 @@ R_Pi_p = np.array(
 look_ahead = 5 # Look ahead distance
 
 
-x_init = np.array([10, 20, 40*np.pi/180, 0, 0, 0])
+x_init = np.array([10, -20, 40*np.pi/180, 0, 0, 0])
 x_ref = np.array([0, 0, heading_ref])
 
 # Simulation parameters
@@ -61,7 +61,7 @@ time = np.linspace(0, T, num_steps+1)
 x_history = np.zeros((num_steps+1, A.shape[0]))
 u_history = np.zeros((num_steps+1, B.shape[1]))
 x_ref_history = np.zeros((num_steps+1, np.shape(x_ref)[0]))
-
+cross_track_error_history = np.zeros(num_steps+1)
 # Controller function
 def controller_LQR(x, x_ref, K_LQR, K_r):
     u = -K_LQR @ x + K_r @ x_ref
@@ -89,6 +89,9 @@ for i in range(num_steps+1):
 
     x_history[i] = x  # Store state history
     u_history[i] = u  # Store control input history
+    cross_track_error_history[i] = errors[1]
+
+print(f"The cross track error by the end of the simulation: {cross_track_error_history[-1]}m")
 
 # Plot shit
 plt.figure(figsize=(12, 8))
@@ -115,4 +118,10 @@ plt.ylabel('y')
 plt.legend()
 
 plt.tight_layout()
+plt.show()
+plt.figure(1)
+plt.plot(time, cross_track_error_history, label="cross track error")
+plt.axis("equal")
+plt.plot(time, np.zeros_like(time))
+plt.legend()
 plt.show()
