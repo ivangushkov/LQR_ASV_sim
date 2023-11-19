@@ -3,6 +3,10 @@ import numpy as np
 class ASV():
 
     def __init__(self, M, D):
+
+        """
+        Initialize some system matrices     
+        """
         
         #m = 50
         #d = np.array([10, 10, 5])
@@ -18,6 +22,10 @@ class ASV():
 
     def state_dot(self, state, tau_actuation, V_current = np.zeros(2)):
         
+        """
+        Derivative of the state calculated with the non-linear kinematix
+        """
+
         heading = state[2]
 
         J = np.array(
@@ -40,7 +48,9 @@ class ASV():
         return x_dot
     
     def linearize_model(self, heading):
-
+        """
+        Get a linearization about some heading
+        """
         J = np.array(
             [[np.cos(heading), -np.sin(heading), 0],
             [np.sin(heading), np.cos(heading), 0],
@@ -59,7 +69,7 @@ class ASV():
     
     def RK4_integration_step(self, x, u, dt):
         
-        # integration scheme for simulation
+        # integration scheme for simulation, implements the Runge-Kutta 4 integrator
 
         k1 = self.state_dot(x,         u)
         k2 = self.state_dot(x+dt/2*k1, u)

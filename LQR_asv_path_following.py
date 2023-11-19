@@ -48,7 +48,7 @@ R_Pi_p = np.array(
 look_ahead = 5 # Look ahead distance
 
 
-x_init = np.array([10, -20, 40*np.pi/180, 0, 0, 0])
+x_init = np.array([10, 20, 40*np.pi/180, 0, 0, 0])
 x_ref = np.array([0, 0, heading_ref])
 
 # Simulation parameters
@@ -78,16 +78,19 @@ for i in range(num_steps+1):
     along_track_error = errors[0]
     p_los_world = R_Pi_p @ np.array([along_track_error + look_ahead, 0]) + p0
 
-    x_ref[:2] = p_los_world
-    x_ref_history[i, :] = x_ref  # Update the reference at each time step
+    x_ref[:2] = p_los_world # Update the position reference at each time step
+    x_ref_history[i, :] = x_ref
     
+    # Calculate controller through LQR. Remeber that in practice you will also have thruster allocation!
     u = controller_LQR(x, x_ref, K_LQR, K_r)  # Calculate control input 'u' at each time step
+    
+    # Simulate system with Runge-Kutta4 integration (don't worry about it, it's like Forward Euler but better ^^)
     x = asv.RK4_integration_step(x, u, dt)
 
     x_history[i] = x  # Store state history
     u_history[i] = u  # Store control input history
 
-# Plot results
+# Plot shit
 plt.figure(figsize=(12, 8))
 plt.subplot(3, 1, 1)
 for j in range(3):
