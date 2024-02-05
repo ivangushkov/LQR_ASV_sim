@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import control
 
 
 def R(psi):
@@ -46,6 +47,9 @@ def asv_ref_model(eta_0, eta_ref, Ts, t_total):
     B_d = np.zeros((9,3))
     B_d[6:, :] = Omega**3
 
+    sys = control.ss(A_d, B_d, np.eye(9), np.zeros((9,3)))
+    sysd = control.c2d(sys, Ts, method='zoh')
+
     # Simulation
     for k in range(N+1):
         x_d[:,k+1] = sysd.A @ x_d[:,k] + sysd.B @ eta_ref
@@ -60,6 +64,8 @@ eta, nu = asv_ref_model(np.array([0, 0, 0]), np.array([10, 10, np.pi/4]), 0.01, 
 
 plot = True
 if plot:
+    # Plotting
+    
     plt.figure('Heading')
     plt.plot(time,eta[2,:], label='psi')
     plt.plot(time, np.pi/4*np.ones(len(time)), label='psi_ref')
