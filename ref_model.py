@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import control
+
 
 def R(psi):
     R = np.array([[np.cos(psi), -np.sin(psi), 0],
@@ -45,9 +45,6 @@ def asv_ref_model(eta_0, eta_ref, Ts, t_total):
 
     B_d = np.zeros((9,3))
     B_d[6:, :] = Omega**3
-
-    sys = control.ss(A_d, B_d, np.eye(9), np.zeros((9,3)))
-    sysd = control.c2d(sys, Ts, method='zoh')
 
     # Simulation
     for k in range(N+1):
