@@ -31,7 +31,7 @@ def asv_ref_model(eta_0, eta_ref, Ts, t_total):
 
     # Define tuning parameters and matrices
     omega_b = 0.1 # Bandwidth for small vessel
-    zeta = 0.7 # Damping ratio
+    zeta = 0.8 # Damping ratio
     omega_n = omega_b/np.sqrt(1-2*zeta**2 + np.sqrt(4*zeta**4 - 4*zeta**2 + 2)) # Natural frequency
     Omega = np.diag([omega_n, omega_n, 0.3]) # Natural frequency matrix
     Delta = np.diag([zeta, zeta, zeta]) # Damping matrix
@@ -56,7 +56,7 @@ def asv_ref_model(eta_0, eta_ref, Ts, t_total):
         eta_d[:,k+1] = x_d[:3,k]
         psi = eta_d[2,k]
         nu_d[:,k+1] = np.transpose(R(psi)) @ x_d[3:6,k]
-
+    
     return eta_d, nu_d
 
 
@@ -102,24 +102,92 @@ def asv_vel_model(nu_0, nu_ref, Ts, t_total):
 
 # Example data
 time = np.arange(0, 100+2*0.01, 0.01)
-#eta, nu = asv_ref_model(np.array([0, 0, 0]), np.array([10, 10, np.pi/4]), 0.01, 100)
-nu = asv_vel_model(np.array([0, 0, 0]), np.array([1.3, 0, 0]), 0.01, 100)
+eta, nu = asv_ref_model(np.array([0, 0, 0]), np.array([10, 10, np.pi/4]), 0.01, 100)
+nu_ref = asv_vel_model(np.array([0, 0, 0]), np.array([1.3, 0, 0]), 0.01, 100)
 
-# Test nu
-plt.figure('Velocity ref')
-plt.plot(time, nu[0,:], label='u')
-plt.xlabel('Time [s]')
-plt.ylabel('Velocity [m/s]')
-plt.legend()
-plt.grid()
-plt.show()
+plot_vel = False
+if plot_vel:
+    # Test nu
+    plt.figure('Velocity ref')
+    plt.plot(time, nu_ref[0,:], label='u')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Velocity [m/s]')
+    plt.legend()
+    plt.grid()
+    plt.show()
 
 
 
+pos = np.array([[10, 0],
+       [10, 10],
+       [0, 10],
+       [0, 0]])
 
-#def test(pos: np.ndarray,  Ts: float, t_total: float):
-#    pass
+def test(pos_start,pos_vec,  Ts, t_total, plot = False):
+    N = int(t_total/Ts) # Sim length
+    p0 = pos_start
+    trajectory = []
+    velocity = []
+    eta = np.zeros((3, 1))
+    N_setpoints = len(pos_vec)
+    for n in range(N_setpoints):
+        p1 = pos_vec[n]
+        psi_0 = p0[2]
+        psi_1 = np.arctan2(p1[1]-p0[1], p1[0]-p0[0])
+        psi_vec = np.array([psi_0, psi_1])
+        psi_vec = np.unwrap(psi_vec, period = 2*np.pi)
+        p1 = np.append(p1,psi_vec[1])
 
+        eta, nu = asv_ref_model(p0, p1, Ts, int(t_total))
+        eta[2,:] = np.unwrap(eta[2,:], period = np.pi)
+        trajectory.append(eta)
+        #velocity.append(nu) # Add start velocity in asv_ref_model function, so it can be chained. e.g final vel sim 1 = start vel sim 2
+        p0 = p1
+        psi_0 = psi_1
+
+    eta = np.concatenate(trajectory, axis=1)
+    print(eta.shape)
+    time = np.arange(0, len(eta[0,:])*Ts, Ts)
+    print(time.shape)
+    if plot:
+        plt.figure('Heading')
+        plt.plot(time,eta[2,:], label='psi')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Heading [rad]')
+        plt.legend()
+        plt.grid()
+
+        scale_factor = 1.5
+        selected_points = eta[:,::500]
+
+        plt.figure('Position xy')
+        plt.scatter(eta[1,:], eta[0,:], label='xy')
+        plt.quiver(selected_points[1,:], selected_points[0,:], scale_factor*np.sin(selected_points[2,:]), 
+                scale_factor*np.cos(selected_points[2,:]), label='heading', color='r')
+        plt.xlabel('East [m]')
+        plt.ylabel('North [m]')
+        plt.legend()
+        plt.grid()
+
+        plt.figure('Position x')
+        plt.plot(time, eta[0,:], label='x')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Position [m]')
+        plt.legend()
+        plt.grid()
+
+        plt.figure('Position y')
+        plt.plot(time, eta[1,:], label='y')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Position [m]')
+        plt.legend()
+        plt.grid()
+
+        plt.show()
+        plt.close('all')
+    #return eta
+        
+test(np.array([0, 0, 0]), pos, 0.01, 100, plot = True)
 
 plot = False
 if plot:
