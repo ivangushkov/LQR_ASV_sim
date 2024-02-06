@@ -44,7 +44,7 @@ class ASV():
 
         x_dot = A @ state + B @ tau_actuation
         x_dot[0:2] += V_current # add current drift term at velocity level
-
+        # print(A)
         return x_dot
     
     def linearize_model(self, heading):
