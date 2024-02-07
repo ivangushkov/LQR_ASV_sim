@@ -33,7 +33,7 @@ def asv_ref_model(eta_0, eta_ref, Ts, t_total):
     omega_b = 0.1 # Bandwidth for small vessel
     zeta = 0.8 # Damping ratio
     omega_n = omega_b/np.sqrt(1-2*zeta**2 + np.sqrt(4*zeta**4 - 4*zeta**2 + 2)) # Natural frequency
-    Omega = np.diag([omega_n, omega_n, 0.3]) # Natural frequency matrix
+    Omega = np.diag([omega_n, omega_n, 0.5]) # Natural frequency matrix
     Delta = np.diag([zeta, zeta, zeta]) # Damping matrix
 
     # Defining A and B
@@ -51,6 +51,7 @@ def asv_ref_model(eta_0, eta_ref, Ts, t_total):
     sysd = control.c2d(sys, Ts, method='zoh')
 
     # Simulation
+    ## Implement a criterion for when to switch to the next setpoint, e.q. when the vessel is within a certain distance from the setpoint ##
     for k in range(N+1):
         x_d[:,k+1] = sysd.A @ x_d[:,k] + sysd.B @ eta_ref
         eta_d[:,k+1] = x_d[:3,k]
@@ -120,7 +121,10 @@ if plot_vel:
 
 pos = np.array([[10, 0],
        [10, 10],
-       [0, 10],
+       [0, 20],
+       [30, 30],
+       [40,0],
+       [0,-10],
        [0, 0]])
 
 def test(pos_start,pos_vec,  Ts, t_total, plot = False):
