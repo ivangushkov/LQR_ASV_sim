@@ -61,8 +61,6 @@ def asv_ref_model(eta_0, eta_ref, Ts, t_total):
     return eta_d, nu_d
 
 
-
-
 def asv_vel_model(nu_0, nu_ref, Ts, t_total):
     N = int(t_total/Ts) # Sim length
     # Define time vector
@@ -118,7 +116,6 @@ if plot_vel:
     plt.show()
 
 
-
 pos = np.array([[10, 0],
        [10, 10],
        [0, 20],
@@ -126,6 +123,7 @@ pos = np.array([[10, 0],
        [40,0],
        [0,-10],
        [0, 0]])
+
 
 def test(pos_start,pos_vec,  Ts, t_total, plot = False):
     N = int(t_total/Ts) # Sim length
@@ -150,9 +148,8 @@ def test(pos_start,pos_vec,  Ts, t_total, plot = False):
         psi_0 = psi_1
 
     eta = np.concatenate(trajectory, axis=1)
-    print(eta.shape)
     time = np.arange(0, len(eta[0,:])*Ts, Ts)
-    print(time.shape)
+    
     if plot:
         plt.figure('Heading')
         plt.plot(time,eta[2,:], label='psi')
@@ -190,6 +187,7 @@ def test(pos_start,pos_vec,  Ts, t_total, plot = False):
         plt.show()
         plt.close('all')
     #return eta
+        
         
 test(np.array([0, 0, 0]), pos, 0.01, 100, plot = True)
 
